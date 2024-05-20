@@ -26,7 +26,8 @@ connection.connect(err => {
   console.log('Connected to MySQL database as ID ' + connection.threadId);
 });
 
-
+const jwt = require('jsonwebtoken');
+const secretKey="djsufebeknkcjcj";
 
 
 
@@ -190,6 +191,35 @@ app.get('/fetch-dates', (req, res) => {
 
 
 
+  app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+    connection.query(
+      "SELECT * FROM users WHERE username = ? AND password = ?",
+      [username , password],
+      (error, results, fields) => {
+      if (error) {
+        console.error('Error executing query:', error.stack);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+        return;
+      }
+  
+      if (results.length > 0) {
+        res.json({ success: true });
+      } else {
+        res.json({ success: false, message: 'Invalid credentials' });
+      }
+    });
+  });
+
+
+  let loggedIn = false;
+
+// Endpoint to check if the user is logged in
+app.get('/check-login', (req, res) => {
+  res.json({ loggedIn });
+});
+
+
   // app.get('/blocked-websites', (req, res) => {
   //   let sql = 'SELECT domain FROM db WHERE status = "Block"';
     
@@ -203,6 +233,9 @@ app.get('/fetch-dates', (req, res) => {
   //     res.json(blockedWebsites);
   //   });
   // });
+
+  
+
   
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
